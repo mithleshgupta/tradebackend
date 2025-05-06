@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -13,7 +15,7 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect("mongodb+srv://mithleshgupta241:I7E4xw6JRlKTZEFJ@cluster1.lfol6op.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1", {
+mongoose.connect(process.env.MONGO_URI, { // Use the MONGO_URI from .env
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log("MongoDB connected"));
@@ -33,17 +35,17 @@ let stocks = require("./stocks.json");
 
 setInterval(async () => {
     stocks = stocks.map(stock => {
-        const randomChange = parseFloat((Math.random() * 10 - 5).toFixed(2)); 
-        const newPrice = parseFloat((stock.currentPrice + randomChange).toFixed(2)); 
-        const changePercent = parseFloat(((newPrice - stock.prevClose) / stock.prevClose * 100).toFixed(2)); 
+        const randomChange = parseFloat((Math.random() * 10 - 5).toFixed(2));
+        const newPrice = parseFloat((stock.currentPrice + randomChange).toFixed(2));
+        const changePercent = parseFloat(((newPrice - stock.prevClose) / stock.prevClose * 100).toFixed(2));
 
         const updated = {
             ...stock,
             currentPrice: newPrice,
             low: Math.min(stock.low, newPrice),
             high: Math.max(stock.high, newPrice),
-            change: randomChange, 
-            percent: changePercent 
+            change: randomChange,
+            percent: changePercent
         };
 
         new Stock(updated).save();
