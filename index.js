@@ -9,28 +9,24 @@ const cors = require("cors");
 const app = express();
 const server = http.createServer(app);
 
-const FRONTEND_ORIGIN = "https://tradefrontend-qn0rvnlag-mithleshs-projects-f6ca9f84.vercel.app";
-
+// Allow CORS from any origin
 const io = new Server(server, {
     cors: {
-        origin: FRONTEND_ORIGIN,
+        origin: "*", // <-- Allow all origins
         methods: ["GET", "POST"],
-        credentials: true
+        credentials: false // should be false when origin is '*'
     }
 });
 
-app.use(cors({
-    origin: FRONTEND_ORIGIN,
-    methods: ["GET", "POST"],
-    credentials: true
-}));
+// Express CORS config
+app.use(cors()); // <-- Allow all origins
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log("✅ MongoDB connected"))
-    .catch(err => console.error("❌ MongoDB connection error:", err));
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
 const Stock = mongoose.model("Stock", {
     symbol: String,
