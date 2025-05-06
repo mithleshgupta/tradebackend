@@ -8,17 +8,29 @@ const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
+
+const FRONTEND_ORIGIN = "https://tradefrontend-qn0rvnlag-mithleshs-projects-f6ca9f84.vercel.app";
+
 const io = new Server(server, {
-    cors: { origin: "*" }
+    cors: {
+        origin: FRONTEND_ORIGIN,
+        methods: ["GET", "POST"],
+        credentials: true
+    }
 });
 
-app.use(cors());
+app.use(cors({
+    origin: FRONTEND_ORIGIN,
+    methods: ["GET", "POST"],
+    credentials: true
+}));
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI, { // Use the MONGO_URI from .env
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-}).then(() => console.log("MongoDB connected"));
+}).then(() => console.log("✅ MongoDB connected"))
+    .catch(err => console.error("❌ MongoDB connection error:", err));
 
 const Stock = mongoose.model("Stock", {
     symbol: String,
@@ -31,7 +43,6 @@ const Stock = mongoose.model("Stock", {
 });
 
 let stocks = require("./stocks.json");
-
 
 setInterval(async () => {
     stocks = stocks.map(stock => {
@@ -55,16 +66,16 @@ setInterval(async () => {
     io.emit("market-update", stocks);
 }, 5000);
 
-
 app.get("/market-data", (req, res) => {
     res.json(stocks);
 });
 
 io.on("connection", (socket) => {
-    console.log("Client connected:", socket.id);
+    console.log("✅ Client connected:", socket.id);
     socket.emit("market-update", stocks);
 });
 
-server.listen(3001, () => {
-    console.log("Server running on http://localhost:3001");
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
 });
